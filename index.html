@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduQuiz Master - Beast Mode</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --dark: #0f172a;
+            --surface: #1e293b;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            z-index: -1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+
+        .game-container {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            max-width: 1000px;
+            width: 100%;
+            padding: 48px;
+            text-align: center;
+            position: relative;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                var(--primary), 
+                var(--secondary), 
+                var(--accent), 
+                var(--success), 
+                var(--warning));
+            border-radius: 32px 32px 0 0;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        h1 {
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 48px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.4)); }
+            to { filter: drop-shadow(0 0 30px rgba(99, 102, 241, 0.6)); }
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .stat-item {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-item:hover::before {
+            left: 100%;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stat-value {
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .subjects-section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            color: #e2e8f0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: left;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .subject-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px 24px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 24px;
+        }
+
+        .subject-card:hover::before {
+            opacity: 1;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+        }
+
+        .subject-card.math::before { 
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 127, 0.2)); 
+        }
+        .subject-card.science::before { 
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2)); 
+        }
+        .subject-card.history::before { 
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 146, 60, 0.2)); 
+        }
+        .subject-card.geography::before { 
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2)); 
+        }
+        .subject-card.literature::before { 
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(147, 51, 234, 0.2)); 
+        }
+        .subject-card.art::before { 
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(219, 39, 119, 0.2)); 
+        }
+        .subject-card.music::before { 
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.2)); 
+        }
+        .subject-card.sports::before { 
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2)); 
+        }
+
+        .subject-emoji {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            display: block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .subject-name {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subject-desc {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .quiz-container {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+
+        .quiz-title {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .quiz-progress {
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            height: 12px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .question-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 32px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 24px 24px 0 0;
+        }
+
+        .question-text {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .option-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 16px;
+            padding: 20px 24px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .option-btn:hover {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: var(--primary);
+            transform: translateX(8px);
+            color: #ffffff;
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-color: var(--primary);
+            color: #ffffff;
+            transform: scale(1.02);
+        }
+
+        .option-btn.correct {
+            background: linear-gradient(135deg, var(--success), #059669);
+            border-color: var(--success);
+            color: #ffffff;
+        }
+
+        .option-btn.incorrect {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            border-color: var(--error);
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #ffffff;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(51, 65, 85, 0.8);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .results-container {
+            display: none;
+            text-align: center;
+            animation: scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 32px 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 32px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .performance-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: badge-shine 2s infinite;
+        }
+
+        @keyframes badge-shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .excellent { 
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: #ffffff;
+        }
+        .good { 
+            background: linear-gradient(135deg, var(--warning), #d97706);
+            color: #ffffff;
+        }
+        .needs-improvement { 
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: #ffffff;
+        }
+
+        .feedback-text {
+            color: #94a3b8;
+            font-size: 1.125rem;
+            line-height: 1.7;
+            margin: 32px 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 24px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .subject-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quiz-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎯 EduQuiz Master</h1>
+        
+        <div id="home-screen">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Total Score</span>
+                    <span class="stat-value" id="total-score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Games Played</span>
+                    <span class="stat-value" id="games-played">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Best Streak</span>
+                    <span class="stat-value" id="best-streak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Score</span>
+                    <span class="stat-value" id="avg-score">0%</span>
+                </div>
+            </div>
+
+            <div class="subjects-section">
+                <h2 class="section-title">📚 Academic Subjects</h2>
+                <div class="subject-grid">
+                    <div class="subject-card math" onclick="startQuiz('math')">
+                        <span class="subject-emoji">🔢</span>
+                        <div class="subject-name">Mathematics</div>
+                        <div class="subject-desc">Algebra, geometry, calculus and more</div>
+                    </div>
+                    <div class="subject-card science" onclick="startQuiz('science')">
+                        <span class="subject-emoji">🔬</span>
+                        <div class="subject-name">Science</div>
+                        <div class="subject-desc">Physics, chemistry, biology fundamentals</div>
+                    </div>
+                    <div class="subject-card history" onclick="startQuiz('history')">
+                        <span class="subject-emoji">🏛️</span>
+                        <div class="subject-name">History</div>
+                        <div class="subject-desc">World events, civilizations, timelines</div>
+                    </div>
+                    <div class="subject-card geography" onclick="startQuiz('geography')">
+                        <span class="subject-emoji">🌍</span>
+                        <div class="subject-name">Geography</div>
+                        <div class="subject-desc">Countries, capitals, physical features</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subjects-section">
+                <h2 class="section-title">🎨 Arts & Culture</h2>
+                <div class="subject-grid">
+                    <div class="subject-card literature" onclick="startQuiz('literature')">
+                        <span class="subject-emoji">📚</span>
+                        <div class="subject-name">Literature</div>
+                        <div class="subject-desc">Classic works, authors, poetry</div>
+                    </div>
+                    <div class="subject-card art" onclick="startQuiz('art')">
+                        <span class="subject-emoji">🎨</span>
+                        <div class="subject-name">Art History</div>
+                        <div class="subject-desc">Famous artists, movements, masterpieces</div>
+                    </div>
+                    <div class="subject-card music" onclick="startQuiz('music')">
+                        <span class="subject-emoji">🎵</span>
+                        <div class="subject-name">Music</div>
+                        <div class="subject-desc">Composers, instruments, theory</div>
+                    </div>
+                    <div class="subject-card sports" onclick="startQuiz('sports')">
+                        <span class="subject-emoji">⚽</span>
+                        <div class="subject-name">Sports</div>
+                        <div class="subject-desc">Rules, records, famous athletes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="quiz-container">
+            <div class="quiz-header">
+                <div class="quiz-title" id="quiz-title">Mathematics Quiz</div>
+                <div class="quiz-progress" id="quiz-progress">Question 1 of 5</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            
+            <div class="question-card">
+                <div class="question-text" id="question-text"></div>
+                <div class="options-grid" id="options-container"></div>
+            </div>
+            
+            <button class="btn-primary" id="next-btn" onclick="nextQuestion()" style="display:none;">Next Question</button>
+            <button class="btn-secondary" onclick="goHome()">Back to Home</button>
+        </div>
+
+        <div id="results-screen" class="results-container">
+            <div class="score-display" id="final-score"></div>
+            <div class="performance-badge" id="performance-badge"></div>
+            <div class="feedback-text" id="feedback-text"></div>
+            <button class="btn-primary" onclick="goHome()">Play Again</button>
+            <button class="btn-secondary" onclick="startQuiz(currentSubject)">Retry Subject</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuiz = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let currentSubject = '';
+        let selectedAnswer = null;
+        let streak = 0;
+        let stats = {
+            totalScore: 0,
+            gamesPlayed: 0,
+            bestStreak: 0,
+            totalQuestions: 0
+        };
+
+        const quizData = {
+            math: [
+                { question: "What is 15 × 8?", options: ["120", "130", "110", "125"], correct: 0 },
+                { question: "What is the square root of 144?", options: ["11", "12", "13", "14"], correct: 1 },
+                { question: "If a triangle has angles of 60°, 60°, and 60°, what type of triangle is it?", options: ["Right triangle", "Equilateral triangle", "Isosceles triangle", "Scalene triangle"], correct: 1 },
+                { question: "What is 25% of 200?", options: ["25", "50", "75", "100"], correct: 1 },
+                { question: "Solve: 3x + 7 = 22. What is x?", options: ["5", "6", "7", "8"], correct: 0 },
+                { question: "What is the value of π (pi) to 2 decimal places?", options: ["3.14", "3.15", "3.16", "3.13"], correct: 0 },
+                { question: "What is 2⁴?", options: ["8", "12", "16", "20"], correct: 2 }
+            ],
+            science: [
+                { question: "What is the chemical symbol for gold?", options: ["Go", "Gd", "Au", "Ag"], correct: 2 },
+                { question: "How many bones are in the adult human body?", options: ["198", "206", "214", "225"], correct: 1 },
+                { question: "What planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], correct: 1 },
+                { question: "What gas do plants absorb from the atmosphere during photosynthesis?", options: ["Oxygen", "Nitrogen", "Carbon dioxide", "Hydrogen"], correct: 2 },
+                { question: "What is the hardest natural substance on Earth?", options: ["Gold", "Iron", "Diamond", "Quartz"], correct: 2 },
+                { question: "What is the speed of light in vacuum?", options: ["300,000 km/s", "150,000 km/s", "450,000 km/s", "200,000 km/s"], correct: 0 },
+                { question: "Which organ produces insulin?", options: ["Liver", "Pancreas", "Kidney", "Heart"], correct: 1 }
+            ],
+            history: [
+                { question: "In which year did World War II end?", options: ["1944", "1945", "1946", "1947"], correct: 1 },
+                { question: "Who was the first President of the United States?", options: ["Thomas Jefferson", "John Adams", "George Washington", "Benjamin Franklin"], correct: 2 },
+                { question: "Which ancient wonder of the world was located in Alexandria?", options: ["Hanging Gardens", "Lighthouse of Alexandria", "Colossus of Rhodes", "Temple of Artemis"], correct: 1 },
+                { question: "The Renaissance began in which country?", options: ["France", "Germany", "Italy", "Spain"], correct: 2 },
+                { question: "Who painted the ceiling of the Sistine Chapel?", options: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"], correct: 1 },
+                { question: "In which year did the Berlin Wall fall?", options: ["1987", "1988", "1989", "1990"], correct: 2 },
+                { question: "Which empire was ruled by Julius Caesar?", options: ["Greek Empire", "Roman Empire", "Byzantine Empire", "Ottoman Empire"], correct: 1 }
+            ],
+            geography: [
+                { question: "What is the capital of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], correct: 2 },
+                { question: "Which is the longest river in the world?", options: ["Amazon River", "Nile River", "Mississippi River", "Yangtze River"], correct: 1 },
+                { question: "Mount Everest is located in which mountain range?", options: ["Andes", "Rocky Mountains", "Alps", "Himalayas"], correct: 3 },
+                { question: "Which country has the most time zones?", options: ["Russia", "United States", "China", "Canada"], correct: 0 },
+                { question: "What is the smallest country in the world?", options: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"], correct: 1 },
+                { question: "Which desert is the largest in the world?", options: ["Sahara", "Arabian", "Gobi", "Kalahari"], correct: 0 },
+                { question: "What is the deepest ocean trench?", options: ["Mariana Trench", "Puerto Rico Trench", "Japan Trench", "Peru-Chile Trench"], correct: 0 }
+            ],
+            literature: [
+                { question: "Who wrote 'Romeo and Juliet'?", options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"], correct: 1 },
+                { question: "Which novel begins with 'It was the best of times, it was the worst of times'?", options: ["Great Expectations", "Oliver Twist", "A Tale of Two Cities", "David Copperfield"], correct: 2 },
+                { question: "Who wrote '1984'?", options: ["Aldous Huxley", "George Orwell", "Ray Bradbury", "H.G. Wells"], correct: 1 },
+                { question: "What is the first book in the Harry Potter series?", options: ["Chamber of Secrets", "Prisoner of Azkaban", "Philosopher's Stone", "Goblet of Fire"], correct: 2 },
+                { question: "Who wrote 'Pride and Prejudice'?", options: ["Charlotte Brontë", "Emily Brontë", "Jane Austen", "Virginia Woolf"], correct: 2 },
+                { question: "Which epic poem was written by Homer?", options: ["The Aeneid", "The Odyssey", "Beowulf", "Paradise Lost"], correct: 1 },
+                { question: "Who wrote 'To Kill a Mockingbird'?", options: ["Harper Lee", "Toni Morrison", "Maya Angelou", "Flannery O'Connor"], correct: 0 }
+            ],
+            art: [
+                { question: "Who painted 'The Starry Night'?", options: ["Pablo Picasso", "Vincent van Gogh", "Claude Monet", "Salvador Dalí"], correct: 1 },
+                { question: "Which artist cut off his own ear?", options: ["Pablo Picasso", "Vincent van Gogh", "Paul Gauguin", "Henri Toulouse-Lautrec"], correct: 1 },
+                { question: "Who painted the 'Mona Lisa'?", options: ["Michelangelo", "Raphael", "Leonardo da Vinci", "Donatello"], correct: 2 },
+                { question: "Which art movement was Pablo Picasso associated with?", options: ["Impressionism", "Cubism", "Surrealism", "Expressionism"], correct: 1 },
+                { question: "Who sculpted 'The Thinker'?", options: ["Auguste Rodin", "Michelangelo", "Henry Moore", "Alberto Giacometti"], correct: 0 },
+                { question: "Which museum houses the 'Mona Lisa'?", options: ["British Museum", "Louvre", "Metropolitan Museum", "Uffizi Gallery"], correct: 1 },
+                { question: "Who painted 'Guernica'?", options: ["Salvador Dalí", "Joan Miró", "Pablo Picasso", "Francisco Goya"], correct: 2 }
+            ],
+            music: [
+                { question: "Who composed 'The Four Seasons'?", options: ["Johann Sebastian Bach", "Wolfgang Amadeus Mozart", "Antonio Vivaldi", "Ludwig van Beethoven"], correct: 2 },
+                { question: "How many strings does a standard guitar have?", options: ["4", "5", "6", "7"], correct: 2 },
+                { question: "Which instrument did Yo-Yo Ma famously play?", options: ["Violin", "Piano", "Cello", "Flute"], correct: 2 },
+                { question: "Who composed 'Moonlight Sonata'?", options: ["Mozart", "Bach", "Chopin", "Beethoven"], correct: 3 },
+                { question: "What does 'forte' mean in music?", options: ["Soft", "Loud", "Fast", "Slow"], correct: 1 },
+                { question: "Which family of instruments does the trumpet belong to?", options: ["Strings", "Woodwinds", "Brass", "Percussion"], correct: 2 },
+                { question: "How many keys are on a standard piano?", options: ["76", "81", "88", "96"], correct: 2 }
+            ],
+            sports: [
+                { question: "How many players are on a basketball team on the court at one time?", options: ["4", "5", "6", "7"], correct: 1 },
+                { question: "In which sport would you perform a slam dunk?", options: ["Volleyball", "Tennis", "Basketball", "Baseball"], correct: 2 },
+                { question: "How long is a marathon?", options: ["24.2 miles", "25.2 miles", "26.2 miles", "27.2 miles"], correct: 2 },
+                { question: "Which country has won the most FIFA World Cups?", options: ["Germany", "Argentina", "Italy", "Brazil"], correct: 3 },
+                { question: "In tennis, what score comes after deuce?", options: ["Game", "Advantage", "40-Love", "Set"], correct: 1 },
+                { question: "How many holes are played in a standard round of golf?", options: ["16", "18", "20", "22"], correct: 1 },
+                { question: "Which sport is known as 'America's Pastime'?", options: ["Football", "Basketball", "Baseball", "Hockey"], correct: 2 }
+            ]
+        };
+
+        function loadStats() {
+            const saved = JSON.parse(localStorage.getItem('eduQuizStats') || '{}');
+            stats = { ...stats, ...saved };
+            updateStatsDisplay();
+        }
+
+        function saveStats() {
+            localStorage.setItem('eduQuizStats', JSON.stringify(stats));
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('total-score').textContent = stats.totalScore;
+            document.getElementById('games-played').textContent = stats.gamesPlayed;
+            document.getElementById('best-streak').textContent = stats.bestStreak;
+            const avgScore = stats.totalQuestions > 0 ? Math.round((stats.totalScore / stats.totalQuestions) * 100) : 0;
+            document.getElementById('avg-score').textContent = avgScore + '%';
+        }
+
+        function startQuiz(subject) {
+            currentSubject = subject;
+            const subjectNames = {
+                math: 'Mathematics',
+                science: 'Science', 
+                history: 'History',
+                geography: 'Geography',
+                literature: 'Literature',
+                art: 'Art History',
+                music: 'Music',
+                sports: 'Sports'
+            };
+            
+            // Shuffle questions and take first 5
+            const allQuestions = [...quizData[subject]];
+            for (let i = allQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+            }
+            currentQuiz = allQuestions.slice(0, 5);
+            
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+            
+            document.getElementById('quiz-title').textContent = subjectNames[subject] + ' Quiz';
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            document.getElementById('results-screen').style.display = 'none';
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= currentQuiz.length) {
+                showResults();
+                return;
+            }
+
+            const question = currentQuiz[currentQuestion];
+            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('quiz-progress').textContent = `Question ${currentQuestion + 1} of ${currentQuiz.length}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            updateProgress();
+            document.getElementById('next-btn').style.display = 'none';
+            selectedAnswer = null;
+        }
+
+        function selectAnswer(index) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = index;
+            const question = currentQuiz[currentQuestion];
+            const options = document.querySelectorAll('.option-btn');
+            
+            options.forEach((option, i) => {
+                if (i === index) {
+                    option.classList.add('selected');
+                }
+                if (i === question.correct) {
+                    option.classList.add('correct');
+                } else if (i === index && i !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (index === question.correct) {
+                score++;
+                streak++;
+                stats.bestStreak = Math.max(stats.bestStreak, streak);
+            } else {
+                streak = 0;
+            }
+            
+            setTimeout(() => {
+                document.getElementById('next-btn').style.display = 'inline-block';
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / currentQuiz.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'block';
+            
+            const percentage = Math.round((score / currentQuiz.length) * 100);
+            document.getElementById('final-score').textContent = `${score}/${currentQuiz.length} (${percentage}%)`;
+            
+            stats.totalScore += score;
+            stats.gamesPlayed++;
+            stats.totalQuestions += currentQuiz.length;
+            saveStats();
+            updateStatsDisplay();
+            
+            let badge = document.getElementById('performance-badge');
+            let feedback = document.getElementById('feedback-text');
+            
+            if (percentage >= 80) {
+                badge.textContent = '🏆 Excellent!';
+                badge.className = 'performance-badge excellent';
+                feedback.textContent = 'Outstanding performance! You have mastered this subject. Your knowledge is impressive and your dedication shows. Keep up the excellent work!';
+            } else if (percentage >= 60) {
+                badge.textContent = '👍 Good Job!';
+                badge.className = 'performance-badge good';
+                feedback.textContent = 'Well done! You have a solid understanding of the subject. With a little more practice and review, you\'ll reach excellence level!';
+            } else {
+                badge.textContent = '📚 Keep Learning!';
+                badge.className = 'performance-badge needs-improvement';
+                feedback.textContent = 'Don\'t worry! Learning is a journey, not a destination. Review the topics, practice more, and challenge yourself again. Every expert was once a beginner!';
+            }
+        }
+
+        function goHome() {
+            document.getElementById('home-screen').style.display = 'block';
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'none';
+        }
+
+        // Initialize the game
+        loadStats();
+    </script>
+</body>
+</html>
